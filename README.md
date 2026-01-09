@@ -16,18 +16,24 @@
 
 **文件夹释义**
 
-- 业务开发解决方案（BusinessDevelopSolutions）
-  - 针对某一种业务场景，提出一些解决方案，并实现
-  - 例如，‘multi-options-storage-query-demo’就是针对多选项的存储与查询的业务场景，怎么快速查询的解决方案
-- 组件整合（ComponentsIntegration）
+- 技术整合（TechIntegration）
   - 将某项技术整合Java或Spring生态
   - 例如，‘springcache-redis’就是将SpringCache API与Redis的整合
-- 示例（Examples）
-  - 某项技术的基本用法的例子
-  - 例如，‘minio-demo’就是minio怎么使用的案例
-- 项目框架（ProjectFrameworks）
-  - 开发脚手架，可以基于此快速搭建起项目
-  - 例如，‘spring-springmvc-mybatis’就是一个整合SSM脚手架的基本项目
+
+- 技术解决方案（TechSolution）
+  - 针对某一技术需求，通过引用某中技术来满足
+  - 例如：在技术上如何设计登录认证和授权鉴权，使用SpringSecurity
+
+- 业务通用解决方案（BusinessCommonSolution）
+  - 某些通用的业务场景，提出一些解决方案，并实现
+  - 某些支撑业务的基础设施服务
+  - 例如：如何设计与实现一个通用场景的用户中心
+  - 例如：‘multi-options-storage-query-demo’就是针对多选项的存储与查询的业务场景，怎么快速查询的解决方案
+
+- 业务领域解决方案（BusinessDomainSolution）
+  - 针对特有领域的业务场景，设计一些算法、技术来实现业务需求
+  - 例如：在电商领域，如何实现秒杀、下单优惠券功能
+
 
 **意义**
 
@@ -36,74 +42,67 @@
 - 代码片段或模板的**粒度要做到尽可能地小、依赖要尽可能地少**
 - 在浏览我的代码片段仓库时，建议使用一种快速阅览插件，我使用的是"Octotree - GitHub code tree"
 
-# Business Develop Solutions
 
-**multi-options-storage-query-demo**
-
-- 一种多选项的存储与高效查询的解决方案
-- 完整项目：[multi-options-storage-query-demo](./BusinessDevelopSolutions/multi-options-storage-query-demo)
-- ReadMe：[README.md](./BusinessDevelopSolutions/multi-options-storage-query-demo/README.md)
-
-**sign-up-sign-in-by-mobile-number-demo**
-
-- 通过手机号实现注册登录
-
-- 完整项目：[sign-up-sign-in-by-mobile-number-demo](./BusinessDevelopSolutions/sign-up-sign-in-by-mobile-number-demo)
-- ReadMe：[README.md](./BusinessDevelopSolutions/sign-up-sign-in-by-mobile-number-demo/README.md)
-
-# Components Integration
-
+# TechIntegration
 
 
 **springcache-redis**
 
 - SpringCache整合Redis示例
 - 它们之间的关系：SpringCache是Spring对缓存的一种规范。Redis才是真正进行缓存的具体工具。可以类比： JDBC规范与实现该规范的MySQL驱动（com.mysql.cj.jdbc.Driver）一样
-- 完整项目：[springcache-redis](./ComponentsIntegration/springcache-redis)
+- 完整项目：[springcache-redis](./TechIntegration/springcache-redis)
 - 详细博文：https://blog.hackyle.com/article/java-demo/springcache-redis
 
 **frontend-maven-package-plugin-demo**
 
 - 前后端统一打包Maven插件
-- 完整项目：[frontend-maven-package-plugin-demo](./ComponentsIntegration/frontend-maven-package-plugin-demo)
-- ReadMe：[README.md](./ComponentsIntegration/frontend-maven-package-plugin-demo/README.md)
+- 完整项目：[frontend-maven-package-plugin-demo](./TechIntegration/frontend-maven-package-plugin-demo)
+- ReadMe：[README.md](./TechIntegration/frontend-maven-package-plugin-demo/README.md)
 
-
-
-# Examples
 
 **spring-starter-demo**
 
 - 第一个starter实例
 - 自定义与实现一个redis-starter，实现自动装配Jedis
-- 完整项目：[spring-starter-demo](./Examples/spring-starter-demo)
-- ReadMe：[README.md](./Examples/spring-starter-demo/README.md)
-
-**minio-demo**
-
-- MinIO是一款高性能的分布式对象存储服务解决方案，常作为Web服务的文件存储服务器，提供文件的上传和下载功能。
-- MinIO整合SpringBoot示例
-- 完整项目：[minio-demo](./Examples/minio-demo)
-- 详细博文：https://blog.hackyle.com/article/java-demo/minio-demo
+- 完整项目：[spring-starter-demo](./TechIntegration/spring-starter-demo)
+- ReadMe：[README.md](./TechIntegration/spring-starter-demo/README.md)
 
 **shiro-demo**
 
 - ApacheShiro整合SpringBoot示例
 - 自定义与实现一个redis-starter，实现自动装配Jedis
-- 完整项目：[shiro-demo](./Examples/shiro-demo)
-- ReadMe：[README.md](./Examples/shiro-demo/README.md)
+- 完整项目：[shiro-demo](./TechIntegration/shiro-demo)
+- ReadMe：[README.md](./TechIntegration/shiro-demo/README.md)
 
 **valid-validated-demo**
 
 - valid与validated的使用示例
 - valid是一种Java规范，Hibernate-validator对其进行了实现；validated是Spring的一种校验机制
-- 完整项目：[valid-validated-demo](./Examples/valid-validated-demo)
+- 完整项目：[valid-validated-demo](./TechIntegration/valid-validated-demo)
 - 详细博文：https://blog.hackyle.com/article/java-demo/valid-validated-demo
+
+
+**spring-springmvc-mybatis**
+
+- Spring+SpringMVC+MyBatis整合示例
+- 完整项目：[spring-springmvc-mybatis](./TechIntegration/spring-springmvc-mybatis)
+- ReadMe：[README.md](./TechIntegration/spring-springmvc-mybatis/README.md)
+
+# TechSolution
+
 
 **QR-code-zxing-demo**
 
 - 二维码的生成与解析开源工具zxing的使用示例
-- 完整项目：[QR-code-zxing-demo](./Examples/QR-code-zxing-demo)
+- 完整项目：[QR-code-zxing-demo](./TechSolution/QR-code-zxing-demo)
+
+**minio-demo**
+
+- MinIO是一款高性能的分布式对象存储服务解决方案，常作为Web服务的文件存储服务器，提供文件的上传和下载功能。
+- MinIO整合SpringBoot示例
+- 完整项目：[minio-demo](./TechSolution/minio-demo)
+- 详细博文：https://blog.hackyle.com/article/java-demo/minio-demo
+
 
 ## 验证码
 
@@ -112,36 +111,46 @@
 - Kaptcha 是一个Google开源、可自由配置的图片验证码生成工具
 - Kaptcha在SpringBoot环境下的用法实例
 - 功能特性：支持**英文、数字**的验证码
-- 完整项目：[kaptcha-demo](./Examples/kaptcha-demo)
+- 完整项目：[kaptcha-demo](./TechSolution/kaptcha-demo)
 - 详细博文：https://blog.hackyle.com/article/java-demo/kaptcha
 
 **easy-captcha-demo**
 
 - easy-captcha整合SpringBoot环境的用法实例
 - 功能特性：支持**英文数字、算术、中文字符、闪图**的验证码
-- 完整项目：[easy-captcha-demo](./Examples/easy-captcha-demo)
-- ReadMe：[README.md](./Examples/easy-captcha-demo/README.md)
+- 完整项目：[easy-captcha-demo](./TechSolution/easy-captcha-demo)
+- ReadMe：[README.md](./TechSolution/easy-captcha-demo/README.md)
 
 **aj-captcha-demo**
 
 - aj-captcha整合SpringBoot环境的用法实例
 - 功能特性：支持**滑动拼图、文字点选**的验证码
-- 完整项目：[aj-captcha-demo](./Examples/aj-captcha-demo)
-- ReadMe：[README.md](./Examples/aj-captcha-demo/README.md)
+- 完整项目：[aj-captcha-demo](./TechSolution/aj-captcha-demo)
+- ReadMe：[README.md](./TechSolution/aj-captcha-demo/README.md)
 
 
 
+# BusinessCommonSolution
+
+**multi-options-storage-query-demo**
+
+- 一种多选项的存储与高效查询的解决方案
+- 完整项目：[multi-options-storage-query-demo](./BusinessCommonSolution/multi-options-storage-query-demo)
+- ReadMe：[README.md](./BusinessCommonSolution/multi-options-storage-query-demo/README.md)
+
+**sign-up-sign-in-by-mobile-number-demo**
+
+- 通过手机号实现注册登录
+
+- 完整项目：[sign-up-sign-in-by-mobile-number-demo](./BusinessCommonSolution/sign-up-sign-in-by-mobile-number-demo)
+- ReadMe：[README.md](./BusinessCommonSolution/sign-up-sign-in-by-mobile-number-demo/README.md)
 
 
-# Project Frameworks
+
+# BusinessDomainSolution
 
 
 
-**spring-springmvc-mybatis**
-
-- Spring+SpringMVC+MyBatis整合示例
-- 完整项目：[spring-springmvc-mybatis](./ProjectFrameworks/spring-springmvc-mybatis)
-- ReadMe：[README.md](./ProjectFrameworks/spring-springmvc-mybatis/README.md)
 
 
 
