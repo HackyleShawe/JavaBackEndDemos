@@ -145,6 +145,12 @@
 - 完整项目：[sign-up-sign-in-by-mobile-number-demo](./BusinessCommonSolution/sign-up-sign-in-by-mobile-number-demo)
 - ReadMe：[README.md](./BusinessCommonSolution/sign-up-sign-in-by-mobile-number-demo/README.md)
 
+**workday-holiday-demo**
+
+- 工作日和节假日的判定和计算
+- 完整项目：[workday-holiday-demo](./BusinessCommonSolution/workday-holiday-demo)
+- ReadMe：[README.md](./BusinessCommonSolution/workday-holiday-demo/README.md)
+
 
 
 # BusinessDomainSolution
