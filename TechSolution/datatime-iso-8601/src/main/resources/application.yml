@@ -1,0 +1,27 @@
+server:
+  port: 9898
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/kdb?useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    username: root
+    password: hackyle
+  # 注意，只可以单时区本地系统这样配置
+  # 1. 全局配置入参日期格式（对应@DateTimeFormat）
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
+  # 2. 全局配置出参日期格式（对应@JsonFormat）
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    # 适配LocalDateTime/LocalDate（Java8时间类型）
+    deserialization:
+      adjust-dates-to-context-time-zone: true
+    serialization:
+      write-dates-as-timestamps: false
+
