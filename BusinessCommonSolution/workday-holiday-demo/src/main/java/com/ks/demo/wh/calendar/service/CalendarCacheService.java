@@ -9,6 +9,7 @@ import com.ks.demo.wh.calendar.dto.CalendarCacheDto;
 import com.ks.demo.wh.calendar.entity.SysCalendar;
 import com.ks.demo.wh.calendar.mapper.SysCalendarMapper;
 import com.ks.demo.wh.common.constant.RegionEnum;
+import com.ks.demo.wh.common.helper.RedissonLockHelper;
 import com.ks.demo.wh.util.BeanCopyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -34,6 +35,12 @@ import java.util.concurrent.TimeUnit;
  * 两级缓存：
  * Level 1：JVM堆内缓存
  * Level 2：外部Redis缓存
+ *
+ * 注意：不要使用LocalDate作为Key：
+ * - Redis序列化时如果需要支持LocalDate，需要额外配置，会影响其他场景下的序列化和反序列化
+ * - Invocation of init method failed; nested exception is java.lang.ClassCastException:
+ *      class java.time.LocalDate cannot be cast to class java.lang.String
+ *   (java.time.LocalDate and java.lang.String are in module java.base of loader 'bootstrap')
  */
 @Slf4j
 @Service
@@ -43,8 +50,7 @@ public class CalendarCacheService {
     /**
      * Level 1：JVM堆内缓存，使用Guava作为JVM堆内缓存。不要使用ConcurrentHashMap，因为它不具备自动管理的能力
      * 不需要定义为static，因为Bean是单例
-     * Key: yyyy-MM-dd (String)
-     * Val: CalenderCacheDto (JSON)
+     * 缓存设计：Key: yyyy-MM-dd (String)；Val: CalenderCacheDto (JSON)
      */
     private final Cache<String, CalendarCacheDto> calendarCache = CacheBuilder.newBuilder()
             .initialCapacity(1200)                           // 设置初始容量
@@ -84,14 +90,21 @@ public class CalendarCacheService {
      * Key:sys:calendar:年份
      * HKey: yyyy-MM-dd (String)
      * HVal: CalenderCacheDto (JSON)
+     * 为什么用Hash，不用单个key？
+     * - 数据一旦初始化，几乎不会更改，所以不存在每个hkey需要单独管理TTL的情况
+     * - 如果拆分为单个key，key的数量太多了
      */
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-    private static final String REDIS_KEY = "sys:calendar:" + LocalDate.now().getYear();
-
     @Autowired
     private SysCalendarMapper sysCalendarMapper;
+    @Autowired
+    private RedissonLockHelper redissonLockHelper;
+
+    private String getRedisKey() {
+        return "sys:calendar:" + LocalDate.now().getYear();
+    }
 
     /**
      * 初始化休息日信息到缓存
@@ -101,15 +114,20 @@ public class CalendarCacheService {
      */
     @PostConstruct
     public void initCache() {
-        Map<String, CalendarCacheDto> holidayMap = loadByYear();
-        calendarCache.putAll(holidayMap);
+        String lockKey = "sys:calendar:lock:init";
+        //使用分布式锁，保证集群环境，同一时刻只有一个服务能进行初始化
+        redissonLockHelper.executeWithLock(lockKey, 500L, Void -> {
+            Map<String, CalendarCacheDto> holidayMap = loadByYear();
+            // 1. 先写 Redis（保证对外一致性）
+            redisTemplate.opsForHash().putAll(getRedisKey(), holidayMap);
 
-        redisTemplate.delete(REDIS_KEY); //初始化时先删除既有缓存
-        redisTemplate.opsForHash().putAll(REDIS_KEY, holidayMap);
-        Boolean hasKey = redisTemplate.hasKey(REDIS_KEY);//检查是否存在hash这个key
-        if(hasKey) {
-            redisTemplate.expire(REDIS_KEY, 12, TimeUnit.HOURS); //设置有效期
-        }
+            // 2. 设置过期时间
+            redisTemplate.expire(getRedisKey(), 12, TimeUnit.HOURS);
+
+            // 3. 再写本地缓存
+            calendarCache.invalidateAll();
+            calendarCache.putAll(holidayMap);
+        });
     }
     private Map<String, CalendarCacheDto> loadByYear() {
         int year = LocalDate.now().getYear();
@@ -142,40 +160,29 @@ public class CalendarCacheService {
 
 
     /**
-     * 先放入一级缓存，再放入二级缓存，如果两者都放入失败，则返回失败
+     * 先放Redis，再放本地缓存
      */
-    public boolean put(List<CalendarCacheDto> calenderCacheDtoList) {
+    public void put(List<CalendarCacheDto> calenderCacheDtoList) {
         if(calenderCacheDtoList == null || calenderCacheDtoList.isEmpty()) {
-            return false;
+            return;
         }
-        boolean level1Result = true;
-        boolean level2Result = true;
 
         Map<String, CalendarCacheDto> holidayMap = new HashMap<>(calenderCacheDtoList.size());
         for (CalendarCacheDto calendar : calenderCacheDtoList) {
             holidayMap.put(calendar.getCalendarDate(), calendar);
         }
-        try {
-            calendarCache.putAll(holidayMap);
-        } catch (Exception e) {  //捕获局部异常，防止放入Level1失败导致放入Level2失败
-            level1Result = false;
-            log.error("缓存节假日信息到Guava失败：", e);
-        }
 
-        try {
-            redisTemplate.opsForHash().putAll(REDIS_KEY, holidayMap);
-        } catch (Exception e) {
-            level2Result = false;
-            log.error("缓存节假日信息到Redis失败：", e);
-        }
-
-        return level1Result || level2Result; //只要放入成功一个，就整体返回成功
+        redisTemplate.opsForHash().putAll(getRedisKey(), holidayMap);
+        calendarCache.putAll(holidayMap);
     }
 
-    public boolean del() {
+    /**
+     * 清除全部缓存
+     */
+    public boolean clear() {
         try {
             calendarCache.cleanUp();
-            redisTemplate.delete(REDIS_KEY);
+            redisTemplate.delete(getRedisKey());
         } catch (Exception e) {
             return false;
         }
@@ -183,13 +190,16 @@ public class CalendarCacheService {
         return true;
     }
 
-    public boolean del(String date) {
+    /**
+     * 失效、删除某个key
+     */
+    public boolean evict(String date) {
         if(StringUtils.isBlank(date)) {
             return false;
         }
         try {
             calendarCache.invalidate(date);
-            redisTemplate.opsForHash().delete(REDIS_KEY, date);
+            redisTemplate.opsForHash().delete(getRedisKey(), date);
         } catch (Exception e) {
             return false;
         }
@@ -208,7 +218,7 @@ public class CalendarCacheService {
 
         Map<String, CalendarCacheDto> result = new HashMap<>();
         //获取整个map
-        Map<Object, Object> entries = redisTemplate.opsForHash().entries(REDIS_KEY);
+        Map<Object, Object> entries = redisTemplate.opsForHash().entries(getRedisKey());
         entries.forEach((hkey, hval) -> result.put(hkey.toString(), (CalendarCacheDto) hval));
         //塞入一级缓存
         if(!CollectionUtils.isEmpty(result)) {
@@ -223,19 +233,13 @@ public class CalendarCacheService {
             return null;
         }
 
-        CalendarCacheDto calenderCacheDto = null;
-        try {
-            calenderCacheDto = calendarCache.getIfPresent(localDate);
-        } catch (Exception e) {
-            log.error("从Guava中获取{}数据异常：", localDate, e);
-        }
+        CalendarCacheDto calenderCacheDto = calendarCache.getIfPresent(localDate);
         if(calenderCacheDto != null) {
-            return calenderCacheDto;
+            return calenderCacheDto == NULL_VAL ? null : calenderCacheDto;
         }
 
         //获取Map中的某个hkey的值
-        Object object = redisTemplate.opsForHash().get(REDIS_KEY, localDate);
-
+        Object object = redisTemplate.opsForHash().get(getRedisKey(), localDate);
         //塞入一级缓存
         if(object != null) {
             calendarCache.put(localDate, JSON.parseObject(JSON.toJSONString(object), CalendarCacheDto.class));
@@ -245,11 +249,3 @@ public class CalendarCacheService {
     }
 
 }
-
-/*
- * 不要使用LocalDate作为Key：
- * - Redis序列化时如果需要支持LocalDate，需要额外配置，会影响其他场景下的序列化和反序列化
- * - Invocation of init method failed; nested exception is java.lang.ClassCastException:
- *      class java.time.LocalDate cannot be cast to class java.lang.String
- *   (java.time.LocalDate and java.lang.String are in module java.base of loader 'bootstrap')
- */
