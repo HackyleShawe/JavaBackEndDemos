@@ -1,0 +1,23 @@
+server:
+  port: 9898
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/kdb?useUnicode=true&characterEncoding=utf8&autoReconnect=true&allowMultiQueries=true&useSSL=false
+    username: root
+    password: hackyle
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
+mybatis-plus:
+  configuration:
+    #这个配置会将执行的sql打印出来，在开发或测试的时候可以用
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  #配置扫描xml
+  mapper-locations: classpath:/mapper/*.xml
+  #别名包扫描路径，通过该属性可以给包中的类注册别名，多个package用逗号或者分号分隔
+  type-aliases-package: com.ks.demo.wh
