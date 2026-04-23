@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ks.demo.ht.dept.mapper.DeptMapper">
+
+    <select id="getSubTree" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        SELECT id, name, pid, weight, ancestor_path, level
+        FROM dept
+        WHERE ancestor_path LIKE CONCAT(#{ancestorPath}, '%')
+    </select>
+
+    <update id="updateChildrenPid">
+        UPDATE dept
+        SET pid = #{newPid}
+        WHERE pid = #{oldPid}
+    </update>
+
+    <update id="updateSubTreeAncestorPath">
+        UPDATE dept
+        SET
+            ancestor_path = CONCAT(#{ancestorPath},
+                                   SUBSTRING(ancestor_path, LENGTH(#{curPath}) + 1)),
+            level = level + #{levelDiff}
+        WHERE
+            ancestor_path LIKE CONCAT(#{curPath}, '%')
+    </update>
+
+    <delete id="delWithSubTree">
+        DELETE FROM dept WHERE ancestor_path LIKE CONCAT(#{ancestorPath}, '%') OR id = #{id}
+    </delete>
+
+
+    <select id="getLeafNodeByExists" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        SELECT d.*
+        FROM dept d
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM dept child
+            WHERE child.pid = d.id
+        );
+    </select>
+
+    <select id="getLeafNodeByLeftJoin" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        SELECT d.*
+        FROM dept d
+                 LEFT JOIN dept child ON child.pid = d.id
+        WHERE child.id IS NULL;
+    </select>
+
+    <select id="getSubTreeLeftNode" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        WITH RECURSIVE tree AS (
+            SELECT * FROM dept WHERE id = #{id} -- 某个子树的的顶级ID
+            UNION ALL
+            SELECT d.*
+            FROM dept d
+                     INNER JOIN tree t ON d.pid = t.id
+        )
+        SELECT t.*
+        FROM tree t
+        WHERE NOT EXISTS (
+            SELECT 1 FROM dept d WHERE d.pid = t.id
+        );
+    </select>
+
+    <select id="getLevelNode" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+
+        WITH RECURSIVE tree AS (
+            -- 1. 根节点（第1层）
+            SELECT id, name, pid, 1 AS level
+            FROM dept
+            WHERE pid = 0
+
+            UNION ALL
+
+            -- 2. 递归向下找子节点
+            SELECT d.id, d.name, d.pid, t.level + 1
+            FROM dept d
+                     INNER JOIN tree t ON d.pid = t.id
+        )
+        SELECT *
+        FROM tree
+        WHERE level = #{level};  -- 指定层级
+    </select>
+
+    <select id="getSubTreeLevelNode" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        --  查某个子树的第 N 层
+        WITH RECURSIVE tree AS (SELECT id, name, pid, 1 AS level
+                                FROM dept
+                                WHERE id = #{id} -- 指定根节点
+
+                                UNION ALL
+
+                                SELECT d.id, d.name, d.pid, t.level + 1
+                                FROM dept d
+                                         JOIN tree t ON d.pid = t.id)
+        SELECT *
+        FROM tree
+        WHERE level = #{level} -- 查某个子树的第三层
+
+    </select>
+
+    <!--适合没有path类字段的做法-->
+    <select id="getParentFullPath" resultType="com.ks.demo.ht.dept.model.DeptEntity">
+        WITH RECURSIVE dept_tree AS (
+            -- 1. 起点（根节点）
+            SELECT id, name, pid, weight, CAST(id AS CHAR(200)) AS path, 0 AS level
+            FROM dept WHERE id = 1 -- 查 id = 3 的所有子节点
+
+        UNION ALL
+
+        -- 2. 递归找子节点
+        SELECT d.id, d.name, d.pid, d.weight, CONCAT(dt.path, '/', d.id) AS path, dt.level + 1
+        FROM dept d INNER JOIN dept_tree dt ON d.pid = dt.id
+            )
+
+        SELECT *
+        FROM dept_tree
+        WHERE id = #{id}
+        -- ORDER BY path; #按照层级排序，树矮的在前面
+
+    </select>
+
+</mapper>
