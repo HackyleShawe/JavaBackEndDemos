@@ -33,7 +33,7 @@ INSERT INTO dept (id, pid, name, weight, ancestor_path, level) VALUES
 (10, 4, '运营部', 1, '/1/4', 3),
 
 (11, 5, 'Java开发', 1, '/1/2/5', 4),
-(12, 5, 'Vue开发', 1, '/1/2/5', 4),
+(12, 5, 'Go开发', 1, '/1/2/5', 4),
 (13, 5, 'Python开发', 3, '/1/2/5', 4);
 
 

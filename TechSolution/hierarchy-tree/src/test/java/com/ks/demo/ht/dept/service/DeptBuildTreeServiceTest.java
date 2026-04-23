@@ -10,9 +10,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.List;
 
 @SpringBootTest
-class DeptTreeServiceTest {
+class DeptBuildTreeServiceTest {
     @Autowired
-    private DeptTreeService deptTreeService;
+    private DeptBuildTreeService deptBuildTreeService;
 
 
     @Test
@@ -24,21 +24,21 @@ class DeptTreeServiceTest {
         //List<DeptVo> deptVos2 = deptTreeService.buildTreeByRe(deptList);
         //System.out.println(JSON.toJSONString(deptVos2));
 
-        List<DeptVo> deptVos1 = deptTreeService.buildTreeByFor(deptTreeService.getDeptList());
+        List<DeptVo> deptVos1 = deptBuildTreeService.buildTreeByFor(deptBuildTreeService.getDeptList());
         System.out.println("deptVos1=" + JSON.toJSONString(deptVos1));
-        List<DeptVo> deptVos2 = deptTreeService.buildTreeByRe(deptTreeService.getDeptList());
+        List<DeptVo> deptVos2 = deptBuildTreeService.buildTreeByRe(deptBuildTreeService.getDeptList());
         System.out.println("deptVos2=" + JSON.toJSONString(deptVos2));
 
-        List<DeptVo> deptVos3 = deptTreeService.buildTreeByMap(deptTreeService.getDeptList());
+        List<DeptVo> deptVos3 = deptBuildTreeService.buildTreeByMap(deptBuildTreeService.getDeptList());
         System.out.println("deptVos3=" + JSON.toJSONString(deptVos3));
-        List<DeptVo> deptVos4 = deptTreeService.buildTreeByStack(deptTreeService.getDeptList());
+        List<DeptVo> deptVos4 = deptBuildTreeService.buildTreeByStack(deptBuildTreeService.getDeptList());
         System.out.println("deptVos4==="+JSON.toJSONString(deptVos4));
-        List<DeptVo> deptVos5 = deptTreeService.buildTreeByHutool(deptTreeService.getDeptList());
+        List<DeptVo> deptVos5 = deptBuildTreeService.buildTreeByHutool(deptBuildTreeService.getDeptList());
         System.out.println("deptVos5="+JSON.toJSONString(deptVos5));
 
-        List<DeptVo> deptListVos1 = deptTreeService.tree2listByRe(deptVos3);
+        List<DeptVo> deptListVos1 = deptBuildTreeService.tree2listByRe(deptVos3);
         System.out.println(JSON.toJSONString(deptListVos1));
-        List<DeptVo> deptListVos2 = deptTreeService.tree2listByStack(deptVos4);
+        List<DeptVo> deptListVos2 = deptBuildTreeService.tree2listByStack(deptVos4);
         System.out.println(JSON.toJSONString(deptListVos2));
     }
 }

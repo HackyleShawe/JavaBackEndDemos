@@ -19,6 +19,19 @@ public interface DeptMapper extends BaseMapper<DeptEntity> {
 
 
     int delWithSubTree(@Param("id") Long id, @Param("ancestorPath") String ancestorPath);
+
+    List<DeptEntity> getLeafNodeByExists();
+
+    List<DeptEntity> getLeafNodeByLeftJoin();
+
+    List<DeptEntity> getSubTreeLeftNode(long id);
+
+    List<DeptEntity> getLevelNode(int level);
+
+    List<DeptEntity> getSubTreeLevelNode(long id, int level);
+
+    DeptEntity getParentFullPath(long id);
+
 }
 
 
