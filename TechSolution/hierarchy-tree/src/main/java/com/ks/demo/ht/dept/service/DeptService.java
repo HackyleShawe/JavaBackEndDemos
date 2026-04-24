@@ -30,21 +30,30 @@ public class DeptService {
 
         //清除缓存
         deptCacheService.putTree(deptTree);
-        deptCacheService.evictChildren(deptEntity.getPid());
-        deptCacheService.evictSubTree(deptEntity.getId());
-        deptCacheService.evict(deptEntity.getId());
+        //新增了节点，意味着更改了树节点，因为不知道这个节点是否被其他子树、子节点缓存，所以需要全部删除
+        deptCacheService.evictAllChildren();
+        deptCacheService.evictAllSubTree();
+        deptCacheService.evict(deptEntity.getId()); //新增的节点，按理来说不可能有，还是删除以前，防止脏数据
 
         return deptTree;
     }
 
     public List<DeptVo> delWithSubTree(long id) {
+        //先查出这个节点id所在的子树，防止下面删除节点构建树时被覆盖
+        List<DeptEntity> subTreeList = deptTreeCrudService.getSubTreeList(id);
+
         List<DeptVo> deptVos = deptTreeCrudService.delWithSubTree(id);
 
         deptCacheService.putTree(deptVos);
         //更改了树节点，因为不知道这个节点是否被其他子树、子节点缓存，所以需要全部删除
         deptCacheService.evictAllChildren();
         deptCacheService.evictAllSubTree();
+
+        //清除缓存的子树节点信息
         deptCacheService.evict(id);
+        subTreeList.stream().map(DeptEntity::getId).forEach(deptId -> {
+                    deptCacheService.evict(deptId);
+        });
 
         return deptVos;
     }
