@@ -31,7 +31,7 @@ public class DeptService {
         //清除缓存
         deptCacheService.putTree(deptTree);
         //新增了节点，意味着更改了树节点，因为不知道这个节点是否被其他子树、子节点缓存，所以需要全部删除
-        deptCacheService.evictAllChildren();
+        deptCacheService.evictChildren(deptEntity.getPid());
         deptCacheService.evictAllSubTree();
         deptCacheService.evict(deptEntity.getId()); //新增的节点，按理来说不可能有，还是删除以前，防止脏数据
 
