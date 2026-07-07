@@ -1,0 +1,38 @@
+server:
+  port: 9898
+  servlet:
+    context-path: /
+
+hashids:
+  salt: kjsdfiaosudkskldjfa #混淆用的盐
+  min-length: 8 #最小长度
+  #至少 16 个字符，不允许重复字符
+  #参与编码的字符，可以剔除调0/O/o,1/I/l等字符，增强可读性
+  base-char: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+
+sqids:
+  salt: jkfsjdfopsijkljskldjfg #混淆用的盐
+  min-length: 8 #最小长度
+  #至少 16 个字符，不允许重复字符
+  #参与编码的字符，可以剔除调0/O/o,1/I/l等字符，增强可读性
+  base-char: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+
+mod:
+  # 自定义参与混淆的字符集
+  base-char: 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
+
+confusion: #可逆性混淆
+  feistel: #轮函数配置
+    rounds: 3 #轮数：3轮足够防枚举、防线性推断，性能也可以接受
+    round-keys: #轮密钥，你可以理解为加密中的秘钥
+      - 0x1F123
+      - 0x17C45
+      - 0x0BEEF
+
+bit-arrange: #按位进行bit编排
+  feistel: #轮函数配置
+    rounds: 3 #轮数：3轮足够防枚举、防线性推断，性能也可以接受
+    round-keys: #轮密钥，你可以理解为加密中的秘钥
+      - 0x1F123
+      - 0x17C45
+      - 0x0BEEF
